@@ -52,6 +52,8 @@ function HomeSearch() {
 
   return (
     <>
+
+        <h1 className='text-7xl font-bold text-center text-red-400'> SMART </h1>
       <form
         onSubmit={handleSubmit}
         className='flex w-full mt-5 mx-auto max-w-[90%] border border-gray-200 px-5 py-3 rounded-full hover:shadow-md focus-within:shadow-md transition-shadow sm:max-w-xl lg:max-w-2xl'
@@ -59,7 +61,7 @@ function HomeSearch() {
         <BsFillMicFill className='text-xl text-gray-500 mr-3' />
         <input
           type='text'
-          placeholder='Search Smart Now and Get Instant Answers.'
+          placeholder='Search Smart Now !! '
           className='flex-grow focus:outline-none'
           value={input}
           onChange={(e) => setInput(e.target.value)}
