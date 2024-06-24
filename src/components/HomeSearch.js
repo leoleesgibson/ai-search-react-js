@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { AiOutlineSearch } from 'react-icons/ai';
-import { BsFillMicFill } from 'react-icons/bs';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { Typewriter } from 'react-simple-typewriter';
+import ReactMarkdown from 'react-markdown';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { darcula } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import VoiceSearchInput from './VoiceSearchInput';
 
 function HomeSearch() {
   const [input, setInput] = useState('');
@@ -10,12 +12,13 @@ function HomeSearch() {
   const [loading, setLoading] = useState(false);
   const [chatHistory, setChatHistory] = useState([]);
 
-  const apiKey = 'AIzaSyDS1PuFSC5ODXMbNbwBwkFyunMLA0AJSsY';
+  // Load API key from environment variables
+  const apiKey = process.env.REACT_APP_GOOGLE_API_KEY;
   const genAI = new GoogleGenerativeAI(apiKey);
 
   const model = genAI.getGenerativeModel({
     model: 'gemini-1.5-pro',
-    systemInstruction: "from today, your name is Smart. you are an AI Base Search engine. Please answer all the user questions in 200 words. be friendly and keep the conversation going",
+    systemInstruction: "from today, Your name is Smart. you are an AI-powered search engine. Please answer all the user questions in 200 words. Be a friendly research assistant and brainstorming buddy. keep the research going , by giving references to external resources on the internet .",
   });
 
   const generationConfig = {
@@ -27,27 +30,28 @@ function HomeSearch() {
   };
 
   useEffect(() => {
-    // Load chat history from localStorage when the component mounts
     const storedChatHistory = JSON.parse(localStorage.getItem('chatHistory')) || [];
     setChatHistory(storedChatHistory);
   }, []);
 
   useEffect(() => {
-    // Save chat history to localStorage whenever it changes
     localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
   }, [chatHistory]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    fetchResponse(input);
+  };
+
+  const fetchResponse = async (query) => {
     setLoading(true);
     setResponse('');
 
-    // Append the new user message to the chat history
     const updatedHistory = [
       ...chatHistory,
       {
         role: 'user',
-        parts: [{ text: input }],
+        parts: [{ text: query }],
       },
     ];
     setChatHistory(updatedHistory);
@@ -58,10 +62,9 @@ function HomeSearch() {
     });
 
     try {
-      const result = await chatSession.sendMessage(input);
+      const result = await chatSession.sendMessage(query);
       const aiResponse = result.response.text();
 
-      // Append the AI response to the chat history
       setChatHistory([
         ...updatedHistory,
         {
@@ -79,6 +82,34 @@ function HomeSearch() {
     }
   };
 
+  const handleVoiceInput = (voiceInput) => {
+    setInput(voiceInput);
+    fetchResponse(voiceInput);
+  };
+
+  // Custom renderers to style Markdown components
+  const renderers = {
+    code({ node, inline, className, children, ...props }) {
+      const match = /language-(\w+)/.exec(className || '');
+      return !inline && match ? (
+        <SyntaxHighlighter style={darcula} language={match[1]} PreTag="div" {...props}>
+          {String(children).replace(/\n$/, '')}
+        </SyntaxHighlighter>
+      ) : (
+        <code className={className} {...props}>
+          {children}
+        </code>
+      );
+    },
+    a({ href, children }) {
+      return (
+        <a href={href} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">
+          {children}
+        </a>
+      );
+    },
+  };
+
   return (
     <>
       <h1 className='text-7xl font-bold text-center text-red-400'> SMART </h1>
@@ -86,7 +117,7 @@ function HomeSearch() {
         onSubmit={handleSubmit}
         className='flex w-full mt-5 mx-auto max-w-[90%] border border-gray-200 px-5 py-3 rounded-full hover:shadow-md focus-within:shadow-md transition-shadow sm:max-w-xl lg:max-w-2xl'
       >
-        <BsFillMicFill className='text-xl text-gray-500 mr-3' />
+        <VoiceSearchInput onVoiceInput={handleVoiceInput} />
         <input
           type='text'
           placeholder='Search Smart Now !! '
@@ -94,7 +125,7 @@ function HomeSearch() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
         />
-        <AiOutlineSearch className='text-lg' />
+        <AiOutlineSearch className='text-lg cursor-pointer' onClick={handleSubmit} />
       </form>
 
       <div className='flex justify-center items-center mt-8 w-full'>
@@ -103,15 +134,9 @@ function HomeSearch() {
         ) : (
           response && (
             <div className="w-full max-w-[90%] sm:max-w-xl lg:max-w-2xl bg-white p-6 rounded-lg">
-              <Typewriter
-                words={[response]}
-                loop={1}
-                cursor
-                cursorStyle='_'
-                typeSpeed={50}
-                deleteSpeed={50}
-                delaySpeed={1000}
-              />
+              <ReactMarkdown components={renderers} className="markdown prose prose-sm sm:prose lg:prose-lg xl:prose-2xl">
+                {response}
+              </ReactMarkdown>
             </div>
           )
         )}
