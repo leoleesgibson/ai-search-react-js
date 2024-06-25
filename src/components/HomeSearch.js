@@ -11,6 +11,7 @@ function HomeSearch() {
   const [response, setResponse] = useState('');
   const [loading, setLoading] = useState(false);
   const [chatHistory, setChatHistory] = useState([]);
+  const [showInstruction, setShowInstruction] = useState(true); // State to control instruction visibility
 
   // Load API key from environment variables
   const apiKey = process.env.REACT_APP_GOOGLE_API_KEY;
@@ -74,6 +75,7 @@ function HomeSearch() {
       ]);
 
       setResponse(aiResponse);
+      setShowInstruction(false); // Hide instruction after getting a response
     } catch (error) {
       console.error('Error fetching from API:', error);
       setResponse('Error fetching the response. Please try again later.');
@@ -113,6 +115,11 @@ function HomeSearch() {
   return (
     <>
       <h1 className='text-7xl font-bold text-center text-red-400'> SMART </h1>
+      {showInstruction && (
+        <div className="text-center mt-4 text-gray-600">
+          <p>Say "Smart" or Search by typing below!</p>
+        </div>
+      )}
       <form
         onSubmit={handleSubmit}
         className='flex w-full mt-5 mx-auto max-w-[90%] border border-gray-200 px-5 py-3 rounded-full hover:shadow-md focus-within:shadow-md transition-shadow sm:max-w-xl lg:max-w-2xl'

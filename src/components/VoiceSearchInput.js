@@ -84,7 +84,7 @@ function VoiceSearchInput({ onVoiceInput }) {
       />
       {isListening && (
         <div className="dialog-box animate__animated animate__fadeIn">
-          <p>Listening...</p>
+          <p>I am Now Listening...</p>
         </div>
       )}
       {errorMessage && (
