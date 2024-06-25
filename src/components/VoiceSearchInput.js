@@ -23,7 +23,6 @@ function VoiceSearchInput({ onVoiceInput }) {
       };
 
       recognition.onerror = (event) => {
-        setErrorMessage(`Error occurred in recognition: ${event.error}`);
         setIsListening(false);
         startWakeWordRecognition();
       };
@@ -63,12 +62,6 @@ function VoiceSearchInput({ onVoiceInput }) {
       }
     };
 
-    recognition.onerror = (event) => {
-      console.error('Error occurred in wake word recognition:', event);
-      if (event.error !== 'aborted') {
-        setErrorMessage(`Error occurred in wake word recognition: ${event.error}`);
-      }
-    };
 
     recognition.start();
     wakeWordRecognitionRef.current = recognition;
